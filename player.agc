@@ -19,6 +19,7 @@ function PlayerInit(Player ref as Player, CameraDistance#)
 	SetCameraLookAt(1,Player.Character.Position.x,Player.Character.Position.y,Player.Character.Position.z,0)
 	Player.Boost_TweenID = CreateTweenCustom(0.3)
 	SetTweenCustomFloat1(Player.Boost_TweenID,100,0,TweenSmooth2())
+	Create3DPhysicsDynamicBody(Player.Character.OID)
 endfunction
 
 function PlayerControll(Player ref as Player, CameraDistance#) // player speed is in the Player character type
@@ -54,18 +55,22 @@ function PlayerControll(Player ref as Player, CameraDistance#) // player speed i
     if GetRawKeyState(KEY_W)
 		MoveZ1#=(Player.Character.MaxSpeed+SpeedBoost#)*Sin90#
 		MoveX1#=(Player.Character.MaxSpeed+SpeedBoost#)*Sin0#
+		SetObject3DPhysicsLinearVelocity(Player.Character.OID,0,0,1, 4)
     endif
     if GetRawKeyState(KEY_S)
 		MoveZ1#=-(Player.Character.MaxSpeed+SpeedBoost#)*Sin90#
 		MoveX1#=-(Player.Character.MaxSpeed+SpeedBoost#)*Sin0#
+		SetObject3DPhysicsLinearVelocity(Player.Character.OID,0,0,-1, 4)
     endif
     if GetRawKeyState(KEY_A)
 		MoveZ2#=(Player.Character.MaxSpeed+SpeedBoost#)*Sin0#
 		MoveX2#=-(Player.Character.MaxSpeed+SpeedBoost#)*Sin90#
+		SetObject3DPhysicsLinearVelocity(Player.Character.OID,-1,0,0, 4)
     endif
     if GetRawKeyState(KEY_D)
 		MoveZ2#=-(Player.Character.MaxSpeed+SpeedBoost#)*Sin0#
 		MoveX2#=(Player.Character.MaxSpeed+SpeedBoost#)*Sin90#
+		SetObject3DPhysicsLinearVelocity(Player.Character.OID,1,0,0, 4)
     endif
     
     if GetRawKeyState(KEY_SPACE)
@@ -97,7 +102,7 @@ function PlayerControll(Player ref as Player, CameraDistance#) // player speed i
 	Player.Character.Velocity.x=curvevalue((MoveX1#+MoveX2#)*FrameTime#,Player.Character.Velocity.x,3.0)
 	Player.Character.Velocity.y=curvevalue((MoveY#)*FrameTime#,Player.Character.Velocity.y,0.2)
 	Player.Character.Velocity.z=curvevalue((MoveZ1#+MoveZ2#)*FrameTime#,Player.Character.Velocity.z,3.0)
-
+	
 	Player.Character.Position.x=Player.Character.Position.x+Player.Character.Velocity.x
 	Player.Character.Position.y=Player.Character.Position.y+Player.Character.Velocity.y
 	Player.Character.Position.z=Player.Character.Position.z+Player.Character.Velocity.z
@@ -106,10 +111,10 @@ function PlayerControll(Player ref as Player, CameraDistance#) // player speed i
 	OldPlayerY#=GetObjectY(Player.Character.OID)
 	OldPlayerZ#=GetObjectZ(Player.Character.OID)
 	
-	if ObjectSphereSlide(0,OldPlayerX#,OldPlayerY#,OldPlayerZ#,Player.Character.Position.x,Player.Character.Position.y,Player.Character.Position.z,0.3)>0
-		Player.Character.Position.x=GetObjectRayCastSlideX(0)
-		Player.Character.Position.z=GetObjectRayCastSlideZ(0)
-	endif
+	//~ if ObjectSphereSlide(0,OldPlayerX#,OldPlayerY#,OldPlayerZ#,Player.Character.Position.x,Player.Character.Position.y,Player.Character.Position.z,0.3)>0
+		//~ Player.Character.Position.x=GetObjectRayCastSlideX(0)
+		//~ Player.Character.Position.z=GetObjectRayCastSlideZ(0)
+	//~ endif
 	
 	// Player to look at mouse position
 	Pointer3DX#=Get3DVectorXFromScreen(PointerX#,PointerY#)
@@ -126,10 +131,16 @@ function PlayerControll(Player ref as Player, CameraDistance#) // player speed i
 	DistZ#=Pointer3DZ#-Player.Character.Position.z
 	
 	NewAngle#=-atanfull(DistX#,DistZ#)
+	OldAngleY#=Player.Character.Rotation.y
 	Player.Character.Rotation.y=CurveAngle(Player.Character.Rotation.y,NewAngle#,6.0)
-	
-	SetObjectPosition(Player.Character.OID,Player.Character.Position.x,Player.Character.Position.y,Player.Character.Position.z)
-	SetObjectRotation(Player.Character.OID,Player.Character.Rotation.x,Player.Character.Rotation.y,Player.Character.Rotation.z)
+	AngleVelocity#=Player.Character.Rotation.y-OldAngleY#
+	Player.Character.Position.x=GetObjectX(Player.Character.OID)
+	Player.Character.Position.y=GetObjectY(Player.Character.OID)
+	Player.Character.Position.z=GetObjectZ(Player.Character.OID)
+	//~ SetObject3DPhysicsAngularVelocity(Player.Character.OID, 0, AngleVelocity#, 0, 6.0 )
+	Player.Character.Rotation.y=GetObjectAngleY(Player.Character.OID)
+	//~ SetObjectPosition(Player.Character.OID,Player.Character.Position.x,Player.Character.Position.y,Player.Character.Position.z)
+	//~ SetObjectRotation(Player.Character.OID,Player.Character.Rotation.x,Player.Character.Rotation.y,Player.Character.Rotation.z)
 	//~ SetCameraPosition(1,Player.Position.x+CameraDistance#*Sin0#,Player.Position.y+CameraDistance#,Player.Position.z+CameraDistance#*Cos0#)
 	//~ SetCameraLookAt(1,Player.Position.x,Player.Position.y,Player.Position.z,0)
 	SetCameraPosition(1,Player.Character.Position.x,Player.Character.Position.y+CameraDistance#,Player.Character.Position.z-CameraDistance#)

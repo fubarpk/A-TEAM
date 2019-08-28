@@ -31,6 +31,11 @@ SetDefaultWrapV(1)
 #include "player.agc"
 #include "debug.agc"
 
+Create3DPhysicsWorld(1)
+Set3DPhysicsGravity(0,0,0)
+
+Create3DPhysicsStaticPlane(0,1,0, -10 )
+
 GameState = -1
 
 do
@@ -167,6 +172,8 @@ function Game()
 			GameState=STATE_GAME_MENU
 			exit
 		endif
+		
+		Step3DPhysicsWorld()
 		
 		if Debug.ShaderEnabled=0
 			Update(0)
